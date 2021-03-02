@@ -436,7 +436,7 @@ let halt_opt version_info where =
   with Failure f -> `Error (false, f)
      | Error (b, m) -> `Error (b, m)
 
-let mk_opts file () () () () () () halt_opt (gc) () () () () () () () ()
+let mk_opts file () () () () () () halt_opt (gc) () () () () () () () () ()
   =
 
   if halt_opt then `Ok false
@@ -482,6 +482,7 @@ let s_sat = "SAT OPTIONS"
 let s_term = "TERM OPTIONS"
 let s_theory = "THEORY OPTIONS"
 let s_fmt = "FORMATTER OPTIONS"
+let s_simp = "SIMPLIFIER"
 
 (* Parsers *)
 
@@ -1242,6 +1243,17 @@ let parse_fmt_opt =
              std_formatter $ err_formatter
             ))
 
+let mk_activ t =
+  if t then set_simplify Util.SPreprocess;
+  `Ok()
+
+let simplify_opt =
+  let docs = s_simp in
+  let activ =
+    let doc = "Activates the preprocess (only intervals) for now" in
+    Arg.(value & flag & info ["simplify"] ~docs ~doc) in
+  Term.(ret (const mk_activ $ activ))
+
 let main =
 
   let file =
@@ -1308,7 +1320,7 @@ let main =
              parse_execution_opt $ parse_halt_opt $ parse_internal_opt $
              parse_limit_opt $ parse_output_opt $ parse_profiling_opt $
              parse_quantifiers_opt $ parse_sat_opt $ parse_term_opt $
-             parse_theory_opt $ parse_fmt_opt
+             parse_theory_opt $ parse_fmt_opt $ simplify_opt
             )),
   Term.info "alt-ergo" ~version:Version._version ~doc ~exits ~man
 
